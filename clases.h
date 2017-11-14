@@ -1,5 +1,5 @@
 #include<iostream>
-
+#include<fstream>
 using namespace std;
 
 template<class T>
@@ -14,7 +14,7 @@ struct Node
     this->data=data;
     this->i=i;
     this->j=j;
-    nextFila=nextColumna=NULL;
+    nextFila=nextColumna=0;
   }
 };
 
@@ -29,18 +29,33 @@ class MatrizEsparza
   MatrizEsparza(int nfilas,int ncolumnas){
     this->nfilas=nfilas;
     this->ncolumnas=ncolumnas;
-    filas= new Node<T>*[nfilas]();
-    columnas= new Node<T>*[ncolumnas]();
+    filas= new Node<T>*[nfilas];
+    columnas= new Node<T>*[ncolumnas];
+    for(int i=0;i<nfilas;i++)
+      filas[i]=0;
+    for(int i=0;i<ncolumnas;i++)
+      columnas[i]=NULL;
     
   }
-  void print();
-  bool find_fila(int ,int ,Node<T> **);
-  bool find_columna(int,int,Node<T> **);
+  void print(ofstream &);
+  bool find_fila(int ,int ,Node<T> **&);
+  bool find_columna(int,int,Node<T> **&);
   bool add(T,int,int);
+  int & get_set_nfilas(){return nfilas;}
+  int & get_set_ncolumnas(){return ncolumnas;}
+  T* get_data(int ,int );
 };
 
-template<clas T>
-bool find_fila(int i,int j,Node<T> **p)
+template<class T>
+T* MatrizEsparza<T>::get_data(int x,int y)
+{
+  Node<T> **p;
+  if(find_fila(x,y,p))
+    return &((*p)->data);
+  return NULL;
+}
+template<class T>
+bool MatrizEsparza<T>::find_fila(int i,int j,Node<T> **&p)
 {
   p=&(columnas[j]);
   while(*p){
@@ -50,7 +65,8 @@ bool find_fila(int i,int j,Node<T> **p)
   }
   return false;
 }
-bool find_columna(int i,int j,Node<T> **p)
+template<class T>
+bool MatrizEsparza<T>::find_columna(int i,int j,Node<T> **&p)
 {
   p=&(filas[i]);
   while(*p){
@@ -59,28 +75,37 @@ bool find_columna(int i,int j,Node<T> **p)
     p=&((*p)->nextColumna);
   }
   return false;
-bool add(T data,int i,int j)
+}
+template<class T>
+bool MatrizEsparza<T>::add(T data,int i,int j)    
 {
   Node<T> ** p;
   Node<T> ** q;
-  if(!find_columna(i,j,p) && !find_fila(i,j,q)){
-    Node<T> *nuevo=new Node<T>(data);
-    nuevo->nextColumna=(*p)->nextColumna;
-    nuevo->nextFila=(*q)->nextFila;
-    (*p)->nextColumna=nuevo;
-    (*q)->nextFila=nuevo;
-    return true;
-     
+  bool ff=find_fila(i,j,q);
+  bool fc=find_columna(i,j,p);
+  if(!ff || !fc){
+    Node<T> *nuevo=new Node<T>(data,i,j);
+    nuevo->nextColumna=(*p);
+  (*p)=nuevo;
+    nuevo->nextFila=(*q);
+    
+    (*q)=nuevo;
+    return true;    
   }
   return false;
 }
 
 template<class T>
-void MatrizEsparza<T>::print()
+void MatrizEsparza<T>::print(ofstream &os)
 {
   for(int i=0;i<nfilas;i++){
+    
     for(int j=0;j<ncolumnas;j++){
-      if()
-    }  
+      if(columnas[j] && columnas[j]->i==i)
+	  os<<columnas[j]->data<<" ";
+      else
+	os<<"0 ";
+    }
+    os<<endl;
   }
 }
